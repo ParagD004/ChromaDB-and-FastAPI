@@ -113,6 +113,11 @@ export default function Page() {
                   <span className="font-bold text-purple-700">ID:</span> <span className="ml-2 text-gray-800">{doc.id}</span>
                   <span className="font-bold text-blue-700 mt-2">Content:</span> <span className="ml-2 text-gray-800">{doc.content}</span>
                   <span className="font-bold text-pink-700 mt-2">Category:</span> <span className="ml-2 text-gray-800">{doc.metadata?.category}</span>
+                  {doc.similarity !== undefined && doc.similarity !== null && (
+                    <span className="mt-2">
+                      <span className="font-bold text-green-700">Match:</span> <span className="ml-2 text-gray-800">{doc.similarity}%</span>
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>
