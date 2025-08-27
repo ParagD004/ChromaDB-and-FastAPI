@@ -24,6 +24,6 @@ def get_chroma_collection(client: ClientAPI = Depends(get_chroma_client)) -> Col
     global _collection
     if _collection is None:
         _collection = client.get_or_create_collection(
-            name="my_collection_2",
+            name="my_collection",
         )
     return _collection

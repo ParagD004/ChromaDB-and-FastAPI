@@ -1,12 +1,15 @@
 "use client";
 import { useState } from "react";
 
+
 export default function Page() {
   const [docId, setDocId] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("");
   const [message, setMessage] = useState("");
   const [documents, setDocuments] = useState([]);
+  const [queryText, setQueryText] = useState("");
+  const [similarDocuments, setSimilarDocuments] = useState([]);
 
   const handlePost = async () => {
     setMessage("");
@@ -34,20 +37,12 @@ export default function Page() {
   const handleGet = async () => {
     setMessage("");
     try {
-      const res = await fetch("/api/documents");
+      const url = queryText ? `/api/documents?query_text=${encodeURIComponent(queryText)}` : "/api/documents";
+      const res = await fetch(url);
       const data = await res.json();
       if (res.ok) {
-        // Map arrays to objects for display
-        if (data.ids && data.documents && data.metadatas) {
-          const docs = data.ids.map((id, idx) => ({
-            id,
-            content: data.documents[idx],
-            metadata: data.metadatas[idx],
-          }));
-          setDocuments(docs);
-        } else {
-          setDocuments([]);
-        }
+        setDocuments(data.all_documents);
+        setSimilarDocuments(data.similar_documents);
       } else {
         setMessage(data.error || "Failed to fetch documents.");
       }
@@ -82,6 +77,13 @@ export default function Page() {
             onChange={e => setCategory(e.target.value)}
             className="px-4 py-2 rounded-lg border border-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400 transition text-gray-700"
           />
+          <input
+            type="text"
+            placeholder="Query for Similarity Search"
+            value={queryText}
+            onChange={e => setQueryText(e.target.value)}
+            className="px-4 py-2 rounded-lg border border-green-300 focus:outline-none focus:ring-2 focus:ring-green-400 transition text-gray-700"
+          />
         </div>
         <div className="flex gap-6 mb-8">
           <button
@@ -102,9 +104,23 @@ export default function Page() {
             {message}
           </div>
         )}
+        {similarDocuments.length > 0 && (
+          <div className="w-full mt-4">
+            <h2 className="text-2xl font-bold text-green-700 mb-4">Top 2 Similar Documents:</h2>
+            <ul className="space-y-4">
+              {similarDocuments.map((doc, idx) => (
+                <li key={idx} className="bg-gradient-to-r from-green-100 via-blue-100 to-pink-100 rounded-xl p-4 shadow flex flex-col">
+                  <span className="font-bold text-purple-700">ID:</span> <span className="ml-2 text-gray-800">{doc.id}</span>
+                  <span className="font-bold text-blue-700 mt-2">Content:</span> <span className="ml-2 text-gray-800">{doc.content}</span>
+                  <span className="font-bold text-pink-700 mt-2">Category:</span> <span className="ml-2 text-gray-800">{doc.metadata?.category}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         {documents.length > 0 && (
           <div className="w-full mt-4">
-            <h2 className="text-2xl font-bold text-blue-700 mb-4">Documents:</h2>
+            <h2 className="text-2xl font-bold text-blue-700 mb-4">All Documents:</h2>
             <ul className="space-y-4">
               {documents.map((doc, idx) => (
                 <li key={idx} className="bg-gradient-to-r from-purple-100 via-blue-100 to-pink-100 rounded-xl p-4 shadow flex flex-col">
